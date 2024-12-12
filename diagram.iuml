@@ -1,0 +1,39 @@
+@startuml
+class usuario {
+  +id: int
+  +nome: String
+  +login: String
+  +senha: String
+  +autenticar(): boolean
+}
+
+class aluno {
+  +progresso: int
+  +realizarCurso: void
+}
+
+class professor {
+  +curso: String
+}
+
+class adm{
+    +cadastrarCurso(): void
+    +excluirCurso(): void
+    +editarCurso(): void
+}
+
+class curso {
+  +id: int
+  +vagas: int
+  +titulo: String
+  +descricao: String
+  +categoria: String
+}
+
+usuario  --|> adm
+usuario  --|> aluno
+usuario  --|> professor
+adm --|> curso
+aluno *--* curso
+professor --* curso 
+@enduml
