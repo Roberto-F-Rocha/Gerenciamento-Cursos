@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,7 +10,6 @@ from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from users.models import aluno, Professor
 from users.api.serializers import alunoSerializer, ProfessorSerializer, ProfessorCreateSerializer
-import logging
 
 logger = logging.getLogger("users")
 
