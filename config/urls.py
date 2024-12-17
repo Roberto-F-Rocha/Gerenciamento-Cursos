@@ -18,15 +18,15 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 from users.api.views import alunoViewSet
-from cursos.api.views import cursoViewSet, inscricaoViewSet
+from cursos.api.views import CursoViewSet, InscricaoViewSet
 from users.api.views import ProfessorViewSet
 
 
 router = SimpleRouter()
 router.register("alunos", alunoViewSet, basename="alunos")
-router.register("cursos", cursoViewSet, basename="cursos")
+router.register("cursos", CursoViewSet, basename="cursos")
 router.register("professores",ProfessorViewSet, basename="professores")
-router.register("inscricoes", inscricaoViewSet, basename="inscricoes")
+router.register("inscricoes", InscricaoViewSet, basename="inscricoes")
 
 def trigger_error(request):
     division_by_zero = 1 / 0
