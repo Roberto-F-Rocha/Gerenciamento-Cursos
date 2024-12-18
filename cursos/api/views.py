@@ -1,12 +1,15 @@
 "Gerencia o CRUD para cursos e incricoes"
 import logging
+
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from cursos.models import curso, inscricao
 from cursos.api.serializers import cursoSerializer, inscricaoSerializer
+
+from users.api.permissions import IsProfessor
 
 # Configuração do logger para registro de logs
 logger = logging.getLogger("cursos")
@@ -17,6 +20,13 @@ class CursoViewSet(ModelViewSet):
     serializer_class = cursoSerializer
     permission_classes = [AllowAny]
     queryset = curso.objects.all()
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [IsProfessor()] or [IsAdminUser()]
+        elif self.action in ['create','update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return super().get_permissions()
 
     def create(self, request, *args, **kwargs):
         "Cria um novo curso, verificando se ele já existe."

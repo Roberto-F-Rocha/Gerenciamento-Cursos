@@ -2,13 +2,14 @@ import logging
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, NotFound, APIException
 from rest_framework import status
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from users.models import aluno, Professor
+from users.api.permissions import IsProfessor
 from users.api.serializers import alunoSerializer, ProfessorSerializer, ProfessorCreateSerializer
 
 logger = logging.getLogger("users")
@@ -18,6 +19,13 @@ class alunoViewSet(ModelViewSet):
     serializer_class = alunoSerializer
     permission_classes = [AllowAny]
     queryset = aluno.objects.all()
+    
+    def get_permissions(self):
+        if self.action in ['update','partial_update','destroy']:
+            return [IsProfessor()]
+        elif self.action == 'list':
+            return [IsAdminUser()]
+        return super().get_permissions()
 
     def criar_aluno(self, request):
         try:
