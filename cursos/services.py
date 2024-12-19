@@ -15,7 +15,7 @@ class CursoService:
         if in_database:
             raise ValueError
         else:
-            nova_curso = curso.objects.create(
+            novo_curso = curso.objects.create(
                 nome=data['nome'],
                 vagas=data['vagas'],
                 titulo=data['titulo'],
@@ -24,6 +24,6 @@ class CursoService:
                 conteudo=data['conteudo'],
                 disponivel=data['disponivel']
             )
-            return nova_sala
+            return novo_curso
 
     
