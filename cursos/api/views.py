@@ -18,14 +18,14 @@ logger = logging.getLogger("cursos")
 class CursoViewSet(ModelViewSet):
     "ViewSet para gerenciar cursos."
     serializer_class = cursoSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = curso.objects.all()
     service = CursoService()
     
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [IsProfessor()] or [IsAdminUser()]
-        elif self.action in ['create','update', 'partial_update', 'destroy']:
+        elif self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminUser()]
         return super().get_permissions()
 
@@ -33,7 +33,15 @@ class CursoViewSet(ModelViewSet):
         "Cria um novo curso, verificando se ele já existe."
         serializer = None
         nome = categoria = None
+        
         try:
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                novo_curso = self.service.create(data=serializer.validated_data)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
             novo_curso = self.service.create(data=serializer.validated_data)
             
             serializer = cursoSerializer(data=request.data)

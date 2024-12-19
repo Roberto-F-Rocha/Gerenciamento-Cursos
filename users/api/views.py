@@ -65,6 +65,7 @@ class ProfessorViewSet(ModelViewSet):
         try:
             serializer = ProfessorCreateSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
+            print(serializer.errors)
 
             try:
                 grupo_professores = Group.objects.get(name="Professores")

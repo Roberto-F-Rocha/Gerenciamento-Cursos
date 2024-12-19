@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 # Create your models here.
 class aluno(models.Model):
     nome = models.CharField(max_length=100)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
     matricula = models.CharField(max_length=10)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    
     def __str__(self):
         return self.nome
     class Meta:
@@ -18,6 +19,8 @@ class Professor(models.Model):
     matricula = models.CharField(max_length=12)
     curso = models.CharField(max_length=140)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    login = models.CharField(max_length=100, default='admin')
+    senha = models.CharField(max_length=100, default='adminadmin')
 
     def __str__(self):
         return self.nome
