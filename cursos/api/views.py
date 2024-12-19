@@ -10,8 +10,8 @@ from cursos.models import curso, inscricao
 from cursos.api.serializers import cursoSerializer, inscricaoSerializer
 
 from users.api.permissions import IsProfessor
+from cursos.services import CursoService
 
-# Configuração do logger para registro de logs
 logger = logging.getLogger("cursos")
 
 
@@ -20,6 +20,7 @@ class CursoViewSet(ModelViewSet):
     serializer_class = cursoSerializer
     permission_classes = [AllowAny]
     queryset = curso.objects.all()
+    service = CursoService()
     
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -33,6 +34,8 @@ class CursoViewSet(ModelViewSet):
         serializer = None
         nome = categoria = None
         try:
+            novo_curso = self.service.create(data=serializer.validated_data)
+            
             serializer = cursoSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 

@@ -10,6 +10,7 @@ class curso(models.Model):
     descricao = models.CharField(max_length=100)
     categoria = models.CharField(max_length=100)
     conteudo = models.TextField()
+    disponivel = models.BooleanField(default= True)
 
     def __str__(self):
         return self.nome

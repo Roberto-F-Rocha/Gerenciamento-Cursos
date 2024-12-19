@@ -12,6 +12,8 @@ from users.models import aluno, Professor
 from users.api.permissions import IsProfessor
 from users.api.serializers import alunoSerializer, ProfessorSerializer, ProfessorCreateSerializer
 
+from users.services import ProfessorService
+
 logger = logging.getLogger("users")
 
 
@@ -19,13 +21,6 @@ class alunoViewSet(ModelViewSet):
     serializer_class = alunoSerializer
     permission_classes = [AllowAny]
     queryset = aluno.objects.all()
-    
-    def get_permissions(self):
-        if self.action in ['update','partial_update','destroy']:
-            return [IsProfessor()]
-        elif self.action == 'list':
-            return [IsAdminUser()]
-        return super().get_permissions()
 
     def criar_aluno(self, request):
         try:
@@ -57,8 +52,16 @@ class ProfessorViewSet(ModelViewSet):
     serializer_class = ProfessorSerializer
     permission_classes = [AllowAny]
     queryset = Professor.objects.all()
+    service = ProfessorService()
+    
+    def get_permissions(self):
+        if self.action in ['update','partial_update','destroy']:
+            return [IsProfessor()]
+        elif self.action == 'list':
+            return [IsAdminUser()]
+        return super().get_permissions()
 
-    def criar_Professor(self, request):
+    def criar_Professor(self):
         try:
             serializer = ProfessorCreateSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -79,12 +82,7 @@ class ProfessorViewSet(ModelViewSet):
                 logger.error("Erro ao criar usuário para professor: %s", str(e))
                 return Response({"Info": "Erro ao criar usuário. Nome de usuário já existe."}, status=status.HTTP_409_CONFLICT)
 
-            novo_professor = Professor.objects.create(
-                nome=serializer.validated_data['nome'],
-                matricula=serializer.validated_data['matricula'],
-                curso=serializer.validated_data['curso'],
-                user=novo_user
-            )
+            novo_professor - self.service.create(serializer.validated_data)
 
             serializer_saida = ProfessorSerializer(novo_professor)
             logger.info("Professor cadastrado com sucesso: nome=%s, matrícula=%s", novo_professor.nome, novo_professor.matricula)
