@@ -17,13 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework.routers import SimpleRouter
-from users.api.views import alunoViewSet
+from users.api.views import AlunoViewSet
 from cursos.api.views import CursoViewSet, InscricaoViewSet
 from users.api.views import ProfessorViewSet
 
 
 router = SimpleRouter()
-router.register("alunos", alunoViewSet, basename="alunos")
+router.register("alunos", AlunoViewSet, basename="alunos")
 router.register("cursos", CursoViewSet, basename="cursos")
 router.register("professores",ProfessorViewSet, basename="professores")
 router.register("inscricoes", InscricaoViewSet, basename="inscricoes")
