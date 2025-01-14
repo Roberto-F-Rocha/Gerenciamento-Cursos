@@ -1,4 +1,3 @@
-"Gerencia o CRUD para cursos e incricoes"
 import logging
 
 from rest_framework import status
@@ -10,7 +9,6 @@ from cursos.models import curso, inscricao
 from cursos.api.serializers import cursoSerializer, inscricaoSerializer
 
 from users.api.permissions import IsProfessor
-from cursos.services import CursoService, InscricaoService
 
 logger = logging.getLogger("cursos")
 
@@ -33,8 +31,29 @@ class CursoViewSet(ModelViewSet):
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             
-            # Utiliza o serviço para criar o curso
-            novo_curso = CursoService.create(data=serializer.validated_data)
+            nome = serializer.validated_data['nome']
+            categoria = serializer.validated_data['categoria']
+
+            # Verifica se o curso já existe
+            if curso.objects.filter(nome=nome, categoria=categoria).exists():
+                logger.error("Curso já cadastrado: nome=%s, categoria=%s", nome, categoria)
+                return Response(
+                    {"Info": "Curso já existe."},
+                    status=status.HTTP_409_CONFLICT
+                )
+
+            # Cria o curso
+            novo_curso = curso.objects.create(
+                nome=nome,
+                vagas=serializer.validated_data['vagas'],
+                titulo=serializer.validated_data['titulo'],
+                descricao=serializer.validated_data['descricao'],
+                categoria=categoria,
+                conteudo=serializer.validated_data['conteudo']
+            )
+            logger.info("Curso cadastrado com sucesso: %s", novo_curso.nome)
+
+            # Serializa a resposta
             serializer_saida = cursoSerializer(novo_curso)
             
             return Response(
@@ -53,24 +72,26 @@ class CursoViewSet(ModelViewSet):
                 {"Info": "Erro interno ao tentar cadastrar o curso."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-    @action(methods=['get'], detail=False, url_path="buscar")
-    def buscar_cursos(self):
-        "Endpoint customizado para buscar todos os cursos."
+        
+    @action(detail=False, methods=["get"], url_path="listar")
+    def listar_cursos(self, request):
+        """
+        Lista todos os cursos disponíveis.
+        """
         try:
-            busca = curso.objects.all()
-            serializer = cursoSerializer(busca, many=True)
+            cursos_disponiveis = self.queryset
+            serializer = self.get_serializer(cursos_disponiveis, many=True)
             return Response(
-                {"Info": "Lista de cursos", "data": serializer.data},
-                status=status.HTTP_200_OK
+                {"Info": "Lista de cursos disponíveis", "data": serializer.data},
+                status=status.HTTP_200_OK,
             )
         except Exception as e:
-            logger.exception("Erro ao buscar cursos: %s", str(e))
+            logger.exception("Erro ao listar cursos: %s", e)
             return Response(
-                {"Info": "Erro interno ao tentar buscar os cursos."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"Info": "Erro ao listar cursos."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
+        
 
 class InscricaoViewSet(ModelViewSet):
     "ViewSet para gerenciar inscrições."
@@ -83,11 +104,33 @@ class InscricaoViewSet(ModelViewSet):
         try:
             serializer = inscricaoSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            
-            # Utiliza o serviço para criar a inscrição
-            nova_inscricao = InscricaoService.create(data=serializer.validated_data)
+
+            aluno = serializer.validated_data['aluno']
+            curso_instance = serializer.validated_data['curso']
+
+            # Verifica se a inscrição já existe
+            if inscricao.objects.filter(aluno=aluno, curso=curso_instance).exists():
+                logger.error(
+                    "Inscrição já realizada: aluno=%s, curso=%s", aluno, curso_instance
+                )
+                return Response(
+                    {"Info": "Inscrição já existe."},
+                    status=status.HTTP_409_CONFLICT
+                )
+
+            # Cria a inscrição
+            nova_inscricao = inscricao.objects.create(
+                aluno=aluno,
+                curso=curso_instance,
+                data=serializer.validated_data['data']
+            )
+            logger.info(
+                "Inscrição realizada com sucesso: aluno=%s, curso=%s", aluno, curso_instance
+            )
+
+            # Serializa a resposta
             serializer_saida = inscricaoSerializer(nova_inscricao)
-            
+
             return Response(
                 {"Info": "Inscrição realizada!", "data": serializer_saida.data},
                 status=status.HTTP_201_CREATED
